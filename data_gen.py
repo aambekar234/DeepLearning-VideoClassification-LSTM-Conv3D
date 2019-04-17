@@ -69,7 +69,7 @@ class DataGen:
         for file in listing:
             video = cv2.VideoCapture("{}{}".format(class_path, file))
             length = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
-            divider = math.floor(length / self.fpv)
+            divider = math.floor(length / (self.fpv+1))
             if divider > 0:
                 frames_dir_name = "{}video_{}".format(op_path, count)
                 os.makedirs(frames_dir_name)
@@ -173,5 +173,4 @@ class DataGen:
                 np.save(op_feature_file_name, sequence)
 
 
-model = DataGen("hmdb/")
-model.generate_data()
+

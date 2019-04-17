@@ -18,7 +18,7 @@ class ResearchModels:
         self.feature_queue = deque()
 
         metrics = ['accuracy']
-        if self.nb_classes >= 10:
+        if self.nb_classes >= 5:
             metrics.append('top_k_categorical_accuracy')
 
         if model == 'lstm':
@@ -35,7 +35,7 @@ class ResearchModels:
         elif model == 'c3d':
             print("Loading C3D model")
             self.input_shape = (seq_length, 80, 80, 3)
-            self.model = self.c3d()
+            self.model = self.conv_3d()
 
         else:
             print("Unknown network.")
@@ -87,8 +87,8 @@ class ResearchModels:
 
         return model
 
-    # Build a 3D convolutional network, aka C3D. https://arxiv.org/pdf/1412.0767.pdf
-    def c3d(self):
+    # Build a 3D convolutional network
+    def conv_3d(self):
 
         model = Sequential()
         model.add(Conv3D(32, (3, 3, 3), activation='relu', input_shape=self.input_shape))

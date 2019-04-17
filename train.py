@@ -1,6 +1,7 @@
 from keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping, CSVLogger
 from models import ResearchModels
 from data_loader import DataLoader
+from data_gen import DataGen
 import time
 import os.path
 
@@ -10,7 +11,7 @@ def create_log_dirs(dirs, data_path):
         if not os.path.exists("{}{}".format(data_path, dir)):
             os.mkdir("{}{}".format(data_path, dir))
 
-
+# run tb -> tensorboard --logdir=data/ --host localhost --port 8088
 def train(model, data_path, sequence_length=30, batch_size=32, nb_epoch=100):
 
     create_log_dirs(["logs/", "logs/csv/", "logs/tensorboard", "logs/checkpoints"], data_path)
@@ -46,6 +47,11 @@ def train(model, data_path, sequence_length=30, batch_size=32, nb_epoch=100):
                  callbacks=[tb, early_stopper, csv_logger, checkpoint],
                  epochs=nb_epoch)
 
-train("c3d", "op3/")
+
+# model = DataGen("hmdb/")
+# model.generate_data()
+
+
+train("lstm", "hmdb_op_30/")
 
 
