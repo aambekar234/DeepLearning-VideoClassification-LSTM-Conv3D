@@ -11,6 +11,7 @@ def create_log_dirs(dirs, data_path):
         if not os.path.exists("{}{}".format(data_path, dir)):
             os.mkdir("{}{}".format(data_path, dir))
 
+
 # run tb -> tensorboard --logdir=logs/tensorboard/ --host localhost --port 8088
 def train(model, data_path, sequence_length=30, batch_size=32, nb_epoch=100, split_strat=1, split=0.3):
 
@@ -48,9 +49,28 @@ def train(model, data_path, sequence_length=30, batch_size=32, nb_epoch=100, spl
                  epochs=nb_epoch)
 
 
-#model = DataGen("hmdb/", fpv=24)
-#model.generate_data()
+
+frames = [16, 32, 46]
+exp_models = ["lstm", "lrcn", "c3d"]
+datasets = ["hmdb", "nada"]
 
 
-train("lstm", "hmdb_op_24/", sequence_length=24, split_strat=2)
-# train("lstm", "nada_op_30/", split_strat=1,split=0.36)
+def generate_exp_data():
+    for dataset in datasets:
+        for s_length in frames:
+            gen = DataGen("{}/".format(dataset), fpv=s_length)
+            gen.generate_data()
+
+
+def run_experiment():
+    for dataset in datasets:
+        for exp_model in exp_models:
+            for s_length in frames:
+                data_path = "{}_op_{}/".format(dataset, s_length)
+                if dataset == "hmdb":
+                    train(exp_model, data_path, sequence_length=s_length, split_strat=2)
+                elif dataset == "nada":
+                    train(exp_model, data_path, sequence_length=s_length, split_strat=1, split=0.36)
+
+
+run_experiment()

@@ -6,7 +6,8 @@ from keras.layers.wrappers import TimeDistributed
 from keras.layers.convolutional import (Conv2D, MaxPooling3D, Conv3D, MaxPooling2D)
 from collections import deque
 import sys
-
+import keras
+from functools import partial
 
 class ResearchModels:
     def __init__(self, nb_classes, model, seq_length, features_length=2048):
@@ -17,9 +18,13 @@ class ResearchModels:
         self.nb_classes = nb_classes
         self.feature_queue = deque()
 
+        top3_acc = partial(keras.metrics.top_k_categorical_accuracy, k=3)
+
+        top3_acc.__name__ = 'top3_acc'
+
         metrics = ['accuracy']
         if self.nb_classes >= 5:
-            metrics.append('top_k_categorical_accuracy')
+            metrics.append(top3_acc)
 
         if model == 'lstm':
             print("Loading LSTM model.")
