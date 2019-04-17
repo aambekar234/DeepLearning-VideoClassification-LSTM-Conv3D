@@ -25,7 +25,8 @@ Generate Frames and Features
 ```
 from data_gen import DataGen
 
-//path to the extracted downloaded data 
+//path to the extracted downloaded data, frames to be extracted per video
+
 gen = DataGen("hmdb/", fpv=30)    
 gen.generate_data()
 
@@ -38,11 +39,24 @@ Train your model ( refer train.py)
 train("lstm", "hmdb_op_30/")
 ```
 
+## Data Split
+- If you are using HMDB Dataset 
+    - Put the Splits folder into the root of Data Output Folder
+    - Use following setting while training
+    ```
+    train("lstm", "hmdb_op_30/", split_strat=2)
+    ```
+- If you are using NADA Dataset
+    - Use following setting while training
+    ```
+    train("lstm", "nada_op_30/", split_strat=1,split=0.36)
+    ```
+
 ## Accuracy
 ### HMDB - 30 Frames Extraction
 - LSTM 
-    1. Categorical - 95%
-    2. Overall - 65%
+    1. Categorical - 91%
+    2. Overall - 61%
 
 
 

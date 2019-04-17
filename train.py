@@ -11,8 +11,8 @@ def create_log_dirs(dirs, data_path):
         if not os.path.exists("{}{}".format(data_path, dir)):
             os.mkdir("{}{}".format(data_path, dir))
 
-# run tb -> tensorboard --logdir=data/ --host localhost --port 8088
-def train(model, data_path, sequence_length=30, batch_size=32, nb_epoch=100):
+# run tb -> tensorboard --logdir=logs/tensorboard/ --host localhost --port 8088
+def train(model, data_path, sequence_length=30, batch_size=32, nb_epoch=100, split_strat=1, split=0.3):
 
     create_log_dirs(["logs/", "logs/csv/", "logs/tensorboard", "logs/checkpoints"], data_path)
     model_name = "{}-{}".format(model, time.time())
@@ -33,10 +33,10 @@ def train(model, data_path, sequence_length=30, batch_size=32, nb_epoch=100):
     csv_logger = CSVLogger(os.path.join(data_path, 'logs', 'csv', model_name + '-' + 'training-' + str(time.time()) + '.csv'))
 
     # Training model
-    data_loader = DataLoader(data_path, "frames")
+    data_loader = DataLoader(data_path, "frames", split_strat=split_strat, split=split)
 
     if model in ["lstm"]:
-        data_loader = DataLoader(data_path, "features")
+        data_loader = DataLoader(data_path, "features", split_strat=split_strat, split=split)
 
     X, y, X_test, y_test, n_classes = data_loader.load_data()
     rm = ResearchModels(n_classes, model, sequence_length)
@@ -48,10 +48,9 @@ def train(model, data_path, sequence_length=30, batch_size=32, nb_epoch=100):
                  epochs=nb_epoch)
 
 
-model = DataGen("hmdb/")
+model = DataGen("hmdb/", fpv=24)
 model.generate_data()
 
 
-# train("lstm", "hmdb_op_30/")
-
-
+# train("lstm", "hmdb_op_30/", split_strat=2)
+# train("lstm", "nada_op_30/", split_strat=1,split=0.36)

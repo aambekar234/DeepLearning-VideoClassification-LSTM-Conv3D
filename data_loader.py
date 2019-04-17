@@ -3,11 +3,12 @@ from keras.utils import to_categorical
 import numpy as np
 from keras.preprocessing.image import img_to_array, load_img
 from tqdm import tqdm
-
+import pandas as pd
+import random
 
 class DataLoader:
 
-    def __init__(self, data_path, data_type, image_shape=(80, 80, 3)):
+    def __init__(self, data_path, data_type, split=0.3, split_strat=1, image_shape=(80, 80, 3)):
 
         print("Data loader initialized")
         self.data_path = data_path
@@ -16,11 +17,40 @@ class DataLoader:
         self.image_shape = image_shape
         self.class_labels = []
         self.get_class_data()
+        self.split = split
+        self.split_strat = split_strat
+        random.seed(23)
 
-    def load_data(self, data_type=None, split=0.3):
 
-        if data_type is not None:
-            self.data_type = data_type
+    def default_split(self, data):
+        train_index = int(len(data) * (1 - self.split))
+        train = data[: train_index]
+        test = data[train_index:]
+        return train, test
+
+    def file_split(self, class_name, data):
+        df = pd.read_csv("{}splits/{}_test_split1.txt".format(self.data_path,class_name), sep=" ", header=None)
+        videos = [d[2] for d in data]
+        train = []
+        test = []
+        counter = 0
+        for video in videos:
+            text = "{}.avi".format(video)
+            key = df[df[0] == text]
+            if len(key) > 0:
+                index = key.index[0]
+                if df[1][index] == 2:
+                    test.append(data[counter])
+                elif df[1][index] == 1:
+                    train.append(data[counter])
+            else:
+                train.append(data[counter])
+
+            counter += 1
+
+        return train, test
+
+    def load_data(self):
 
         train = []
         test = []
@@ -30,11 +60,8 @@ class DataLoader:
             listing = os.listdir("{}{}/".format(self.data_path, "frames"))
             for class_name in listing:
                 listing2 = os.listdir("{}{}/{}/".format(self.data_path, "frames", class_name))
-                video_id = 0
-                total_videos = len(listing2)
-                split_flag = (1.0 - split) * total_videos
+                data = []
                 for video in listing2:
-                    video_id += 1
                     listing3 = os.listdir("{}{}/{}/{}".format(self.data_path, "frames", class_name, video))
                     frames = []
                     for frame in listing3:
@@ -42,31 +69,47 @@ class DataLoader:
                         frames.append(frame_path)
                     sequence = self.build_image_sequence(frames)
                     label = self.get_class_one_hot(class_name)
-                    if video_id <= split_flag:
-                        train.append((sequence, label))
-                    else:
-                        test.append((sequence, label))
+                    data.append((sequence, label, video))
+
+                if self.split_strat == 1:
+                    a, b = self.default_split(data)
+                    [train.append(t) for t in a]
+                    [test.append(t) for t in b]
+
+                if self.split_strat == 2:
+                    a, b = self.file_split(class_name, data)
+                    [train.append(t) for t in a]
+                    [test.append(t) for t in b]
+
                 pbar.update(1)
 
         elif self.data_type == "features":
             listing = os.listdir("{}{}/".format(self.data_path, "features"))
             for class_name in listing:
                 listing2 = os.listdir("{}{}/{}/".format(self.data_path, "features", class_name))
-                video_id = 0
-                total_videos = len(listing2)
-                split_flag = (1.0 - split) * total_videos
+                data = []
                 for video in listing2:
-                    video_id += 1
                     np_path = "{}{}/{}/{}".format(self.data_path, "features", class_name, video)
                     sequence = np.load(np_path)
                     label = self.get_class_one_hot(class_name)
-                    if video_id <= split_flag:
-                        train.append((sequence, label))
-                    else:
-                        test.append((sequence, label))
+                    data.append((sequence, label, video[:-4]))
+
+                if self.split_strat == 1:
+                    a, b = self.default_split(data)
+                    [train.append(t) for t in a]
+                    [test.append(t) for t in b]
+
+                if self.split_strat == 2:
+                    a, b = self.file_split(class_name, data)
+                    [train.append(t) for t in a]
+                    [test.append(t) for t in b]
+
                 pbar.update(1)
 
         pbar.close()
+
+        random.shuffle(train)
+        random.shuffle(test)
 
         X = [t[0] for t in train]
         y = [t[1] for t in train]
@@ -107,4 +150,5 @@ class DataLoader:
         img_arr = img_to_array(image)
         x = (img_arr / 255.).astype(np.float32)
         return x
+
 
