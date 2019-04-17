@@ -52,10 +52,14 @@ class DataGen:
 
     # removes all generated files and recreates directories
     def clean_project(self):
-        if os.path.isdir(self.op_path):
-            shutil.rmtree(self.op_path)
+        if os.path.exists(self.op_features_path):
+            shutil.rmtree(self.op_features_path)
 
-        os.makedirs(self.op_path)
+        if os.path.exists(self.op_frames_path):
+            shutil.rmtree(self.op_frames_path)
+
+        if not os.path.exists(self.op_path):
+            os.makedirs(self.op_path)
         os.makedirs(self.op_features_path)
         os.makedirs(self.op_frames_path)
 
@@ -64,14 +68,13 @@ class DataGen:
     # op_path : output path for the extracted frames
     def frame_extractor(self, class_path, op_path, pbar):
         listing = os.listdir(class_path)
-        count = 1
 
         for file in listing:
             video = cv2.VideoCapture("{}{}".format(class_path, file))
             length = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
             divider = math.floor(length / (self.fpv+1))
             if divider > 0:
-                frames_dir_name = "{}video_{}".format(op_path, count)
+                frames_dir_name = "{}{}".format(op_path, file[:-4])
                 os.makedirs(frames_dir_name)
                 image_id = 1
                 while video.isOpened():
@@ -87,7 +90,6 @@ class DataGen:
                             cv2.imwrite(filename, frame)
                         image_id += 1
                 video.release()
-                count += 1
         pbar.update(1)
 
     # function which generates frame data and feature data

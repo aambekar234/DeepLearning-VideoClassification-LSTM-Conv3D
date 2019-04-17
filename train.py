@@ -48,10 +48,10 @@ def train(model, data_path, sequence_length=30, batch_size=32, nb_epoch=100):
                  epochs=nb_epoch)
 
 
-# model = DataGen("hmdb/")
-# model.generate_data()
+model = DataGen("hmdb/")
+model.generate_data()
 
 
-train("lstm", "hmdb_op_30/")
+# train("lstm", "hmdb_op_30/")
 
 
