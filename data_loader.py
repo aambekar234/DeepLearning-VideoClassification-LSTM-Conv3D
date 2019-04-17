@@ -29,7 +29,7 @@ class DataLoader:
         return train, test
 
     def file_split(self, class_name, data):
-        df = pd.read_csv("{}splits/{}_test_split1.txt".format(self.data_path,class_name), sep=" ", header=None)
+        df = pd.read_csv("hmdb_splits/{}_test_split1.txt".format(class_name), sep=" ", header=None)
         videos = [d[2] for d in data]
         train = []
         test = []
