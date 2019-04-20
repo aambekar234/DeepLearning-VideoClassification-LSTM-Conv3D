@@ -54,7 +54,7 @@ class DataLoader:
 
         train = []
         test = []
-        print("Loading data into memory...")
+        print("Loading data into the memory...")
         pbar = tqdm(total=self.n_classes)
         if self.data_type == "frames":
             listing = os.listdir("{}{}/".format(self.data_path, "frames"))
